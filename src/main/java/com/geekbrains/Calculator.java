@@ -4,6 +4,10 @@ public class Calculator implements Runnable{
 
     private float[] arr;
 
+    public float[] getArr() {
+        return arr;
+    }
+
     public Calculator(float[] arr) {
         this.arr = arr;
     }

@@ -37,12 +37,18 @@ public class Main {
         System.arraycopy(arr, size / 2, rightHalf, 0, size / 2);
 
         System.out.println("время разделения: " + (System.currentTimeMillis() - startDivideTime) + " ms.");
-        Thread firstThread = new Thread(new Calculator(leftHalf));
-        Thread secondThread = new Thread(new Calculator(rightHalf));
+        Calculator firstCalculator = new Calculator(leftHalf);
+        Calculator secondCalculator = new Calculator(rightHalf);
+
+        Thread firstThread = new Thread(firstCalculator);
+        Thread secondThread = new Thread(secondCalculator);
         firstThread.start();
         firstThread.join();
         secondThread.start();
         secondThread.join();
+
+        leftHalf = firstCalculator.getArr();
+        rightHalf = secondCalculator.getArr();
 
         long startMergeTime = System.currentTimeMillis();
         System.arraycopy(leftHalf, 0, arr, 0, size / 2);
