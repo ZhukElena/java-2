@@ -43,8 +43,8 @@ public class Main {
         Thread firstThread = new Thread(firstCalculator);
         Thread secondThread = new Thread(secondCalculator);
         firstThread.start();
-        firstThread.join();
         secondThread.start();
+        firstThread.join();
         secondThread.join();
 
         leftHalf = firstCalculator.getArr();
