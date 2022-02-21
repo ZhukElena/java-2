@@ -35,11 +35,21 @@ public class OwnLinkedList<T> {
             return;
         }
 
+        Node node = new Node(data);
+        if (index == 0) {
+            node.next = head;
+            head = node;
+            size++;
+            return;
+        }
+
         Node current = head;
-        for (int i = 1; i <= index; i++) {
+        for (int i = 1; i < index; i++) {
             current = current.next;
         }
-        current.data = data;
+        node.next = current.next;
+        current.next = node;
+        size++;
     }
 
     public void remove(int index) {
