@@ -4,12 +4,17 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.sql.SQLException;
 
 public class ClientHandler {
     private final Server server;
     private final Socket socket;
     private final DataInputStream inputStream;
     private final DataOutputStream outputStream;
+
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
 
     private String nickName;
 
@@ -29,7 +34,7 @@ public class ClientHandler {
                     try {
                         authentication();
                         readMessages();
-                    } catch (IOException exception) {
+                    } catch (IOException | SQLException exception) {
                         exception.printStackTrace();
                     } finally {
                         closeConnection();
@@ -41,7 +46,7 @@ public class ClientHandler {
         }
     }
 
-    public void authentication() throws IOException {
+    public void authentication() throws IOException, SQLException {
         while (true) {
             String message = inputStream.readUTF();
             if (message.startsWith(ServerCommandConstants.AUTHORIZATION)) {
@@ -64,7 +69,7 @@ public class ClientHandler {
         }
     }
 
-    private void readMessages() throws IOException {
+    private void readMessages() throws IOException, SQLException {
         while (true) {
             String messageInChat = inputStream.readUTF();
             if (messageInChat.startsWith(ServerCommandConstants.DIRECT_MESSAGE)) {
@@ -84,8 +89,15 @@ public class ClientHandler {
             }
 
             System.out.println("от " + nickName + ": " + messageInChat);
-            if(messageInChat.equals(ServerCommandConstants.SHUTDOWN)) {
+            if (messageInChat.equals(ServerCommandConstants.SHUTDOWN)) {
                 return;
+            }
+
+            if (messageInChat.startsWith(ServerCommandConstants.CHANGE_USERNAME)) {
+                String[] message = messageInChat.split(" ");
+                String newUsername = message[1];
+                server.changeUserName(newUsername, nickName);
+                continue;
             }
 
             server.broadcastMessage(nickName + ": " + messageInChat);
