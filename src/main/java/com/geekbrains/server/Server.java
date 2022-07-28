@@ -7,6 +7,8 @@ import com.geekbrains.server.authorization.InMemoryAuthServiceImpl;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,8 +17,8 @@ public class Server {
 
     private List<ClientHandler> connectedUsers;
 
-    public Server() {
-        authService = new InMemoryAuthServiceImpl();
+    public Server(Connection connection) {
+        authService = new InMemoryAuthServiceImpl(connection);
         try (ServerSocket server = new ServerSocket(CommonConstants.SERVER_PORT)) {
             authService.start();
             connectedUsers = new ArrayList<>();
@@ -70,6 +72,18 @@ public class Server {
 
     public synchronized void disconnectUser(ClientHandler handler) {
         connectedUsers.remove(handler);
+    }
+
+    public void changeUserName(String newUsername, String oldUsername) throws SQLException {
+        if (authService.changeUsername(newUsername, oldUsername)) {
+            for (ClientHandler connectedUser : connectedUsers) {
+                if (connectedUser.getNickName().equals(oldUsername)) {
+                    connectedUser.setNickName(newUsername);
+                    broadcastMessage(oldUsername + " now calls himself " + newUsername);
+                    break;
+                }
+            }
+        }
     }
 
 }
