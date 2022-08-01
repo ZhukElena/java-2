@@ -1,8 +1,6 @@
 package com.geekbrains.server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.sql.SQLException;
 
@@ -54,8 +52,20 @@ public class ClientHandler {
                 String nickName = server.getAuthService().getNickNameByLoginAndPassword(authInfo[1], authInfo[2]);
                 if (nickName != null) {
                     if (!server.isNickNameBusy(nickName)) {
-                        sendMessage("/authok " + nickName);
                         this.nickName = nickName;
+                        File file = new File("src/main/resources/chat-history/" + nickName);
+                        if (file.exists()) {
+                            BufferedReader reader = new BufferedReader(new FileReader(file));
+                            for (int i = 0; i < 100; i++) {
+                                String line = reader.readLine();
+                                if (line == null) {
+                                    break;
+                                } else {
+                                    outputStream.writeUTF(line);
+                                }
+                            }
+                        }
+                        sendMessage("/authok " + nickName);
                         server.broadcastMessage(nickName + " зашел в чат");
                         server.addConnectedUser(this);
                         return;
@@ -106,7 +116,12 @@ public class ClientHandler {
 
     public void sendMessage(String message) {
         try {
-            outputStream.writeUTF(message);
+            if (nickName != null) {
+                FileWriter fileWriter = new FileWriter("src/main/resources/chat-history/" + nickName, true);
+                fileWriter.append(message).append("\n");
+                fileWriter.close();
+                outputStream.writeUTF(message);
+            }
         } catch (IOException exception) {
             exception.printStackTrace();
         }

@@ -8,13 +8,13 @@ import java.sql.Statement;
 public class ServerStarter {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
-        Connection connection = connection();
+        Connection connection = createConnection();
         createUsers(connection);
         new Server(connection);
         disconnect(connection);
     }
 
-    private static Connection connection() throws ClassNotFoundException, SQLException {
+    private static Connection createConnection() throws ClassNotFoundException, SQLException {
         Class.forName("org.sqlite.JDBC");
         return DriverManager.getConnection("jdbc:sqlite:src/main/resources/db/mainDB.db");
     }
