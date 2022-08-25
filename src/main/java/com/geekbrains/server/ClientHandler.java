@@ -1,5 +1,8 @@
 package com.geekbrains.server;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import java.io.*;
 import java.net.Socket;
 import java.sql.SQLException;
@@ -9,6 +12,7 @@ public class ClientHandler {
     private final Socket socket;
     private final DataInputStream inputStream;
     private final DataOutputStream outputStream;
+    private static final Logger LOGGER = LogManager.getLogger(ClientHandler.class);
 
     public void setNickName(String nickName) {
         this.nickName = nickName;
@@ -67,6 +71,7 @@ public class ClientHandler {
                         }
                         sendMessage("/authok " + nickName);
                         server.broadcastMessage(nickName + " зашел в чат");
+                        LOGGER.info(nickName + " зашел в чат");
                         server.addConnectedUser(this);
                         return;
                     } else {
@@ -99,6 +104,7 @@ public class ClientHandler {
             }
 
             System.out.println("от " + nickName + ": " + messageInChat);
+            LOGGER.info(nickName + " прислал сообщение");
             if (messageInChat.equals(ServerCommandConstants.SHUTDOWN)) {
                 return;
             }
@@ -130,6 +136,7 @@ public class ClientHandler {
     private void closeConnection() {
         server.disconnectUser(this);
         server.broadcastMessage(nickName + " вышел из чата");
+        LOGGER.info(nickName + " вышел из чата");
         try {
             outputStream.close();
             inputStream.close();
