@@ -3,6 +3,8 @@ package com.geekbrains.server;
 import com.geekbrains.CommonConstants;
 import com.geekbrains.server.authorization.AuthService;
 import com.geekbrains.server.authorization.InMemoryAuthServiceImpl;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -16,20 +18,25 @@ public class Server {
     private final AuthService authService;
 
     private List<ClientHandler> connectedUsers;
+    private static final Logger LOGGER = LogManager.getLogger(Server.class);
 
     public Server(Connection connection) {
+
         authService = new InMemoryAuthServiceImpl(connection);
         try (ServerSocket server = new ServerSocket(CommonConstants.SERVER_PORT)) {
             authService.start();
             connectedUsers = new ArrayList<>();
             while (true) {
                 System.out.println("Сервер ожидает подключения");
+                LOGGER.info("Сервер ожидает подключения");
                 Socket socket = server.accept();
                 System.out.println("Клиент подключился");
+                LOGGER.info("Клиент подключился");
                 new ClientHandler(this, socket);
             }
         } catch (IOException exception) {
             System.out.println("Ошибка в работе сервера");
+            LOGGER.debug("Ошибка в работе сервера");
             exception.printStackTrace();
         } finally {
             if (authService != null) {
